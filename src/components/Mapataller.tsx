@@ -67,6 +67,7 @@ const MapaTaller = forwardRef<MapaTallerRef, MapaTallerProps>(({ vehiculosInicia
             // Esta línea es un workaround común para un problema de Webpack/Leaflet con las URLs de iconos.
             // Se usa 'as any' porque la propiedad '_getIconUrl' no está en los tipos oficiales de Leaflet,
             // pero es una forma de sobrescribir el comportamiento por defecto.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete (L.Icon.Default.prototype as any)._getIconUrl;
             L.Icon.Default.mergeOptions({
                 iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
