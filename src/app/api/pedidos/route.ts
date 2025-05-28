@@ -1,4 +1,3 @@
-
 // app/api/pedidos/route.ts
 import { NextResponse } from 'next/server';
 
@@ -57,6 +56,55 @@ export async function GET() {
 
   } catch (error) {
     console.error("Error en GET /vehiculos:", error);
+    return Response.json({ error: 'Error interno del servidor' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  const baseScriptUrl = 'https://script.google.com/macros/s/AKfycbyQzxHBkU5TdvSlXtnqAdiUPoEgTToDXQlNGcRSeHDrGCfnhcZ5kgBuHOy3QBhz_wkB/exec';
+
+  try {
+    const body = await request.json() as { 
+      ri: string; 
+      ubicacion: string; 
+      observaciones: string; 
+      fechaSolicitada: string; 
+    };
+    const { ri, ubicacion, observaciones, fechaSolicitada } = body;
+
+    if (!ri || !ubicacion) {
+      return Response.json({ error: "Faltan datos: se necesita ri y ubicacion" }, { status: 400 });
+    }
+
+    const params = new URLSearchParams({
+      action: 'addRow',
+      ri: ri,
+      ubicacion: ubicacion,
+      observaciones: observaciones || '',
+      fechaSolicitada: fechaSolicitada
+    });
+
+    const scriptUrl = `${baseScriptUrl}?${params.toString()}`;
+
+    const response = await fetch(scriptUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error al crear pedido:", errorText);
+      return Response.json({ error: "Error al crear pedido", details: errorText }, { status: 500 });
+    }
+
+    const data = await response.json();
+    return Response.json({ success: true, message: "Pedido creado correctamente", data });
+
+  } catch (error) {
+    console.error("Error en POST /pedidos:", error);
     return Response.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
